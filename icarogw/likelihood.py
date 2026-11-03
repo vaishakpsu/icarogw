@@ -8,7 +8,7 @@ from .wrappers import FlatLambdaCDM_wrap
 
 # LVK Reviewed
 class hierarchical_likelihood(bilby.Likelihood):
-    def __init__(self, posterior_samples_dict, injections, rate_model, nparallel=None, neffPE=20,neffINJ=None,likelihood_variance_thr=None):
+    def __init__(self, posterior_samples_dict, injections, rate_model, nparallel=None, neffPE=20,neffINJ=None,likelihood_variance_thr=None,seed=0):
         '''
         Base class for an hierachical likelihood. It just saves all the input requirements for a general hierarchical analysis
         
@@ -28,6 +28,9 @@ class hierarchical_likelihood(bilby.Likelihood):
             Number of effective injections needed to evaluate the selection bias, if None we will assume 4* observed signals.
         likelihood_variance_thr: int
             Likelihood variance to use for the cut, the suggested value if 1 from (2304.06138).
+        seed: int or None
+            Seed for the choice of the nparallel PE samples per event (see posterior_samples_catalog.build_parallel_posterior).
+            If None, a new random choice is made in every initialization.
         '''
         
         # Saves injections in a cupyfied format
@@ -35,7 +38,7 @@ class hierarchical_likelihood(bilby.Likelihood):
         self.neffPE=neffPE
         self.rate_model=rate_model
         self.posterior_samples_dict=posterior_samples_dict
-        self.posterior_samples_dict.build_parallel_posterior(nparallel=nparallel)
+        self.posterior_samples_dict.build_parallel_posterior(nparallel=nparallel,seed=seed)
         self.likelihood_variance_thr = likelihood_variance_thr
 
         if likelihood_variance_thr is not None:
@@ -115,7 +118,7 @@ class hierarchical_likelihood(bilby.Likelihood):
 
 #LVK reviewed
 class hierarchical_likelihood_v1(bilby.Likelihood):
-    def __init__(self, posterior_samples_dict, injections, rate_model, nparallel=None, neffPE=20,neffINJ=None,likelihood_variance_thr=None):
+    def __init__(self, posterior_samples_dict, injections, rate_model, nparallel=None, neffPE=20,neffINJ=None,likelihood_variance_thr=None,seed=0):
         '''
         Base class for an hierachical liklihood. It just saves all the input requirements for a general hierarchical analysis
         
@@ -135,6 +138,9 @@ class hierarchical_likelihood_v1(bilby.Likelihood):
             Number of effective injections needed to evaluate the selection bias, if None we will assume 4* observed signals.
         likelihood_variance_thr: int
             Likelihood variance to use for the cut, the suggested value if 1 from (2304.06138).
+        seed: int or None
+            Seed for the choice of the nparallel PE samples per event (see posterior_samples_catalog.build_parallel_posterior).
+            If None, a new random choice is made in every initialization.
         '''
         
         # Saves injections in a cupyfied format
@@ -142,7 +148,7 @@ class hierarchical_likelihood_v1(bilby.Likelihood):
         self.neffPE=neffPE
         self.rate_model=rate_model
         self.posterior_samples_dict=posterior_samples_dict
-        self.posterior_samples_dict.build_parallel_posterior(nparallel=nparallel)
+        self.posterior_samples_dict.build_parallel_posterior(nparallel=nparallel,seed=seed)
         self.likelihood_variance_thr = likelihood_variance_thr
 
         if likelihood_variance_thr is not None:
@@ -268,7 +274,7 @@ class hierarchical_likelihood_noevents(bilby.Likelihood):
 
 
 class Poisson_times_Stochastic_CBC_likelihood(hierarchical_likelihood):
-    def __init__(self, posterior_samples_dict, injections, rate_model, look_up_Om0, stochastic_data, nparallel=None, neffPE=20, neffINJ=None):
+    def __init__(self, posterior_samples_dict, injections, rate_model, look_up_Om0, stochastic_data, nparallel=None, neffPE=20, neffINJ=None, seed=0):
         '''
         Class for a joint likelihood: hierachical likelihood combined to stochastic likelihood
         
@@ -293,8 +299,10 @@ class Poisson_times_Stochastic_CBC_likelihood(hierarchical_likelihood):
             Effective number of samples per event that must contribute the prior evaluation
         neffINJ: int
             Number of effective injections needed to evaluate the selection bias, if None we will assume 4* observed signals.
+        seed: int or None
+            Seed for the choice of the nparallel PE samples per event. If None, a new random choice is made in every initialization.
         '''
-        super().__init__(posterior_samples_dict, injections, rate_model, nparallel, neffPE, neffINJ)
+        super().__init__(posterior_samples_dict, injections, rate_model, nparallel, neffPE, neffINJ, seed=seed)
         self.freqs = freqs
         self.look_up_Om0 = look_up_Om0
         self.stochastic_data = stochastic_data
