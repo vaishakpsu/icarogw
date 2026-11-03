@@ -18,7 +18,7 @@ class posterior_samples_catalog(object):
         self.posterior_samples_dict = posterior_samples_dict
         self.n_ev = len(posterior_samples_dict)
     
-    def build_parallel_posterior(self,nparallel):
+    def build_parallel_posterior(self,nparallel,seed=0):
         '''
         Build a matrix of GW parameters by selecting random samples from each posterior
         
@@ -26,6 +26,11 @@ class posterior_samples_catalog(object):
         ----------
         nparallal: int
             Number of posterior samples to select, if None it will select the maximum common number
+        seed: int or None
+            Seed for the random choice of samples in event posteriors that have more than nparallel 
+            samples. With a fixed seed, every new process picks the same samples. 
+            If None, a new random choice is made each time. Note that this applies to checkpoit-resume
+            runs as well.
         '''
         
         
@@ -45,6 +50,7 @@ class posterior_samples_catalog(object):
                                               dtype=self.posterior_samples_dict[llev[0]].posterior_data[key].dtype)
 
         self.Ns_array = xp.ones(self.n_ev)
+        rng = np.random.default_rng(seed)
         # Saves the posterior samples in a dictionary containing events on rows and posterior samples on columns
         for i,event in enumerate(list(self.posterior_samples_dict.keys())):
             len_single = self.posterior_samples_dict[event].nsamples
@@ -52,7 +58,7 @@ class posterior_samples_catalog(object):
             self.Ns_array[i] = xp.minimum(len_single,self.nparallel)
             print('Taking {:d} posterior samples from {:s} that has {:d} samples'.format(Ntake,event,len_single))
             # Permute the posterior samples below and then take the first Ntake
-            rand_perm = xp.random.permutation(len_single)[:Ntake]
+            rand_perm = xp.asarray(rng.permutation(len_single)[:Ntake])
             for key in self.posterior_parallel.keys():
                 self.posterior_parallel[key][i,:len(rand_perm)]=self.posterior_samples_dict[event].posterior_data[key][rand_perm]
                 self.posterior_parallel[key][i,len(rand_perm):]=self.posterior_samples_dict[event].posterior_data[key][rand_perm[-1]] # Fill the matrix with last sample
